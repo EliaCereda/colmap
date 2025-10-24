@@ -462,13 +462,30 @@ void CopyRegisteredImage(image_t image_id,
 
 bool MergeReconstructions(const double max_reproj_error,
                           const Reconstruction& src_reconstruction,
-                          Reconstruction& tgt_reconstruction) {
+                          Reconstruction& tgt_reconstruction,
+                          const std::string& alignment_error) {
   Sim3d tgt_from_src;
-  if (!AlignReconstructionsViaReprojections(src_reconstruction,
-                                            tgt_reconstruction,
-                                            /*min_inlier_observations=*/0.3,
-                                            max_reproj_error,
-                                            &tgt_from_src)) {
+  
+  bool success = false;
+  if (alignment_error == "reprojection") {
+    success = AlignReconstructionsViaReprojections(
+        src_reconstruction,
+        tgt_reconstruction,
+        /*min_inlier_observations=*/0.3,
+        /*max_reproj_error=*/max_reproj_error,
+        &tgt_from_src);
+  } else if (alignment_error == "proj_center") {
+    success = AlignReconstructionsViaProjCenters(
+        src_reconstruction,
+        tgt_reconstruction,
+        /*max_proj_center_error=*/max_reproj_error,
+        &tgt_from_src);
+  } else {
+    LOG(ERROR) << "Invalid alignment_error specified.";
+    return false;
+  }
+  
+  if (!success) {
     return false;
   }
 
