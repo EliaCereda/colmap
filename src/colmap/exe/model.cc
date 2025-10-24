@@ -728,12 +728,15 @@ int RunModelMerger(int argc, char** argv) {
   std::string input_path2;
   std::string output_path;
   double max_reproj_error = 64.0;
+  std::string alignment_error = "reprojection";
 
   OptionManager options;
   options.AddRequiredOption("input_path1", &input_path1);
   options.AddRequiredOption("input_path2", &input_path2);
   options.AddRequiredOption("output_path", &output_path);
   options.AddDefaultOption("max_reproj_error", &max_reproj_error);
+  options.AddDefaultOption(
+      "alignment_error", &alignment_error, "{reprojection, proj_center}");
   options.Parse(argc, argv);
 
   Reconstruction reconstruction1;
@@ -750,7 +753,7 @@ int RunModelMerger(int argc, char** argv) {
 
   PrintHeading2("Merging reconstructions");
   if (MergeAndFilterReconstructions(
-          max_reproj_error, reconstruction1, reconstruction2)) {
+          max_reproj_error, reconstruction1, reconstruction2, alignment_error)) {
     LOG(INFO) << "=> Merge succeeded";
     PrintHeading2("Merged reconstruction");
     LOG(INFO) << StringPrintf("Images: %d", reconstruction2.NumRegImages());
